@@ -325,16 +325,7 @@ export default class FullscreenToNewWorkspace extends Extension {
 
     shouldPlaceBackToOldWorkspaceChange(win, change, rectold) {
         const rectmax=win.get_work_area_for_monitor(win.get_monitor());
-        return this.isNormalWindow(win) && (
-            (this.isMaximizeEnabled() && 
-                (change === Meta.SizeChange.UNMAXIMIZE) &&
-                    // do nothing if it was only partially maximized
-                    rectmax.equal(rectold)) ||
-            ((change === Meta.SizeChange.UNFULLSCREEN) && 
-                (this.isMaximizeEnabled() ? 
-                    (win.get_maximized() !== Meta.MaximizeFlags.BOTH) :
-                    true))
-        );
+        return (this.isNormalWindow(win) && this.isMaximizeEnabled() && rectmax.equal(rectold) && (win.get_maximized() !== Meta.MaximizeFlags.BOTH) && (!win.fullscreen));
     }
 
     isMaximizeEnabled() {
