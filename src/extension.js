@@ -301,32 +301,30 @@ export default class FullscreenToNewWorkspace extends Extension {
     }
 
     isNormalWindow(win) {
-        return (win.window_type === Meta.WindowType.NORMAL) && 
-            !win.is_always_on_all_workspaces();
+        return (win.window_type === Meta.WindowType.NORMAL);
+    }
+
+    isMaximized(win) {
+        return (win['maximized-horizontally'] && win['maximized-vertically']) ||  win.fullscreen;
     }
 
     shouldPlaceOnNewWorkspaceWin(win) {
-        return this.isNormalWindow(win) && (
-            this.isMaximizeEnabled() ?
-                // This is also true for fullscreen windows as well as maximized windows  
-                win.get_maximized() === Meta.MaximizeFlags.BOTH :
-                win.fullscreen
-        );
+        return this.isNormalWindow(win) && this.isMaximizeEnabled() && this.isMaximized(win);
     }
 
     shouldPlaceOnNewWorkspaceChange(win, change) {
         return this.isNormalWindow(win) && (
             (this.isMaximizeEnabled() && 
                 (change === Meta.SizeChange.MAXIMIZE) && 
-                (win.get_maximized() === Meta.MaximizeFlags.BOTH)) ||
+                this.isMaximized(win)) ||
             (change === Meta.SizeChange.FULLSCREEN)
         );
     }
 
     shouldPlaceBackToOldWorkspaceChange(win, change, rectold) {
         const rectmax=win.get_work_area_for_monitor(win.get_monitor());
-        log("shouldPlaceBackToOldWorkspaceChange", win.get_id(), (!!this._windowids_maximized[win.get_id()]), this.isNormalWindow(win), this.isMaximizeEnabled(), rectmax.equal(rectold), (win.get_maximized() !== Meta.MaximizeFlags.BOTH), (!win.fullscreen));
-        return (this.isNormalWindow(win) && this.isMaximizeEnabled() && (this._windowids_maximized[win.get_id()]) && (win.get_maximized() !== Meta.MaximizeFlags.BOTH) && (!win.fullscreen));
+        //log("shouldPlaceBackToOldWorkspaceChange", win.get_id(), (!!this._windowids_maximized[win.get_id()]), this.isNormalWindow(win), this.isMaximizeEnabled(), rectmax.equal(rectold), !this.isMaximized(win), (!win.fullscreen));
+        return (this.isNormalWindow(win) && this.isMaximizeEnabled() && (this._windowids_maximized[win.get_id()]) && !this.isMaximized(win));
     }
 
     isMaximizeEnabled() {
